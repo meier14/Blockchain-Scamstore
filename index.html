@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<meta charset="UTF-8">
+
+<head>
+<title>Scamstore Alpha</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!--<link rel="stylesheet" href="style.css">-->
+</head>
+
+<body>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+    <script type="text/javascript" src="require.js"></script>
+    <!--<script type="text/javascript" src="./web3.js-4.x/packages/web3/src/index.ts"></script>-->
+    <script type="module">//import require from "./require.js";
+
+        //import Web3 from "./web3.js-4.x/packages/web3/src/index.ts";
+        //const Web3 = require(['web3']);
+        //const web3 = new Web3('https://ethereum-sepolia-rpc.publicnode.com');
+        const web3 = new Web3(window.ethereum);
+
+
+
+
+
+        /*fetch("./ABI.json")
+            .then(response=>{
+                if(!response.ok){
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+            })
+            .then(ABI = data)
+        .catch(error => console.error('Error fetching JSON:', error));*/
+
+        //const ABI = JSON.parse('./ABI.json');
+
+        const ABI = [{
+            "inputs": [{ "internalType": "uint16", "name": "Scamtype", "type": "uint16" }, { "internalType": "uint16", "name": "ScamMethod", "type": "uint16" }, {
+                "internalType": "string",
+                "name": "Sender",
+                "type": "string"
+            }
+            ],
+            "name": "DisputeScam",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint16",
+                    "name": "Scamtype",
+                    "type": "uint16"
+                },
+                {
+                    "internalType": "uint16",
+                    "name": "ScamMethod",
+                    "type": "uint16"
+                }, { "internalType": "string", "name": "Sender", "type": "string" }], "name": "ReportScam", "outputs": [], "stateMutability": "payable", "type": "function"
+        }, { "inputs": [{ "internalType": "uint16", "name": "Scamtype", "type": "uint16" }, { "internalType": "uint16", "name": "ScamMethod", "type": "uint16" }, { "internalType": "string", "name": "Sender", "type": "string" }], "name": "CheckScam", "outputs": [{ "internalType": "bool", "name": "present", "type": "bool" }], "stateMutability": "view", "type": "function" }, { "inputs": [{ "internalType": "uint16", "name": "Scamtype", "type": "uint16" }, { "internalType": "uint16", "name": "ScamMethod", "type": "uint16" }, { "internalType": "string", "name": "Sender", "type": "string" }], "name": "GetStats", "outputs": [{ "internalType": "uint32", "name": "", "type": "uint32" }, { "internalType": "uint32", "name": "", "type": "uint32" }], "stateMutability": "view", "type": "function" }]
+
+        //import ABI from './ABI.json' assert {type:'json'};
+
+
+        // Log the chain ID to the console
+        /*web3.eth
+            .getChainId()
+            .then(result => {
+                console.log('Chain ID: ' + result);
+            })
+            .catch(error => {
+                console.error(error);
+            });*/
+
+        const scamstore = new web3.eth.Contract(ABI, "0xb9DbE8DA2505d5b20D80D28F618a336fCf214211");
+        //web3.eth-accounts.setChain(11155111);
+
+        async function submitscam(account, money) {
+            var scamtype = parseInt(document.getElementById('scamtype').value);
+            var scammethod = parseInt(document.getElementById('scammethod').value);
+            var scamsender = document.getElementById('scamsender').value;
+            //CHANGE TO .send(), the call() function CANNOT change contract state
+            console.log(scamtype + " " + scammethod + " " + scamsender);
+            console.log(account + " " + money);
+            //console.log("chain id" + web3.eth.account.chainid());
+            await scamstore.methods.ReportScam(scamtype, scammethod, scamsender).send({ from: account, value: money });
+        }
+
+        async function dispute(account, money) {
+            var scamtype = parseInt(document.getElementById('scamtype').value);
+            var scammethod = parseInt(document.getElementById('scammethod').value);
+            var scamsender = document.getElementById('scamsender').value;
+            //CHANGE TO .send(), the call() function CANNOT change contract state
+
+            const result = await scamstore.methods.DisputeScam(scamtype, scammethod, scamsender).send({ from: account, value: money });
+
+            return result;
+
+        }
+
+        async function getstats() {
+            var scamtype = parseInt(document.getElementById('scamtype').value);
+            var scammethod = parseInt(document.getElementById('scammethod').value);
+            var scamsender = document.getElementById('scamsender').value;
+
+            result = await scamstore.methods.GetStats(scamtype, scammethod, scamsender).call();
+
+            return result;
+
+        }
+        console.log("functions loaded")
+        document.getElementById("submitbutton").onclick=async() => {
+            console.log(currentAccount)
+            await submitscam(currentAccount,parseEthToWei(document.getElementById('ethAmount').value) );
+            //todo, account selector
+        };
+        document.getElementById("disputebutton").onclick = async () => {
+                console.log(currentAccount)
+                await disputescam(currentAccount, parseEthToWei(document.getElementById('ethAmount').value));
+                //todo, account selector
+        };
+        document.getElementById("statsbutton").onclick = async () => {
+                console.log(currentAccount)
+                showMsg(await getstats(),"success");
+                //todo, account selector
+        };
+        </script>
+    <h1> </h1>
+
+    <div class="glass-panel w-full max-w-md rounded-2xl shadow-2xl overflow-hidden p-8 space-y-6 relative">
+        
+        <!-- Header / Status -->
+        <div class="flex justify-between items-center border-b border-gray-700 pb-4">
+            <h1 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-orange-400 to-yellow-600">
+                <!--ETH Sender-->
+            </h1>
+            <div id="statusIndicator" class="flex items-center space-x-2 text-xs font-mono text-gray-400">
+                <span class="w-2 h-2 rounded-full bg-red-500 transition-colors duration-300" id="statusDot"></span>
+                <span id="statusText">Disconnected</span>
+            </div>
+        </div>
+
+        <!-- Wallet Connection -->
+        <div id="connectSection" class="text-center space-y-4">
+            <div class="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+                <p class="text-gray-400 text-sm mb-3">Connect your wallet to start sending.</p>
+                <button onclick="connectWallet()" class="w-full py-3 px-4 bg-orange-600 hover:bg-orange-500 rounded-lg font-semibold transition-all duration-200 shadow-lg shadow-orange-900/50 flex items-center justify-center gap-2 group">
+                    <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                    </svg>
+                    Connect MetaMask
+                </button>
+            </div>
+        </div>
+
+        <!-- Transaction Form (Hidden initially) -->
+        <div id="transactionSection" class="space-y-6 hidden">
+            
+            <!-- From Address Display -->
+            <div class="space-y-1">
+                <!--<label class="text-xs text-gray-500 uppercase tracking-wide font-semibold">From Account</label>-->
+                <div class="flex items-center space-x-2 bg-gray-900/50 p-3 rounded-lg border border-gray-700">
+                    <!--<div class="w-8 h-8 rounded-full bg-gradient-to-r from-blue-400 to-indigo-500 flex items-center justify-center text-xs font-bold">ME</div>-->
+                    <code id="userAddress" class="text-sm text-gray-300 truncate font-mono">0x...</code>
+                </div>
+            </div>
+
+            <!-- Recipient Input -->
+            <!--<div class="space-y-1">
+                <label class="text-xs text-gray-500 uppercase tracking-wide font-semibold">Recipient Address</label>
+                <div class="relative">
+                    <input type="text" id="recipientAddr" placeholder="0x..." class="w-full bg-gray-800 border border-gray-700 text-white text-sm rounded-lg focus:ring-orange-500 focus:border-orange-500 block p-3 pl-10 transition-all font-mono" />
+                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                    </div>
+                </div>
+            </div>-->
+
+            <!-- Amount Input -->
+            <div class="space-y-1">
+                <label class="text-xs text-gray-500 uppercase tracking-wide font-semibold">Amount (ETH)</label>
+                <div class="relative">
+                    <input type="number" id="ethAmount" step="0.0001" placeholder="0.0" class="w-full bg-gray-800 border border-gray-700 text-white text-xl font-bold rounded-lg focus:ring-orange-500 focus:border-orange-500 block p-3 pr-16 transition-all" />
+                    <!--<div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                        <span class="text-gray-400 font-bold">ETH</span>-->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Button -->
+            <!--<button onclick="sendTransaction()" id="sendBtn" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 rounded-lg font-bold text-white shadow-lg shadow-indigo-900/50 transition-all transform active:scale-95 flex justify-center items-center">
+                Send Transaction
+            </button>-->
+        </div>
+
+        <!-- Logs/Output -->
+        <div id="msgArea" class="hidden p-4 rounded-lg text-sm border"></div>
+    </div>
+
+    <script>
+
+                async function connectToSepolia() {
+                        if (window.ethereum) {
+                            try {
+                                // Request account access if needed
+                                await window.ethereum.request({ method: 'eth_requestAccounts' });
+                                // Request to switch to the Sepolia network
+                                await window.ethereum.request({
+                                    method: 'wallet_switchEthereumChain',
+                                    params: [{ chainId: '0xaa36a7' }], // Hexadecimal for 11155111
+                                });
+                                console.log("Successfully connected to Sepolia!");
+                            } catch (switchError) {
+                                // If the network hasn't been added, prompt the user to add it
+                                if (switchError.code === 4902) {
+                                    try {
+                                        await window.ethereum.request({
+                                            method: 'wallet_addEthereumChain',
+                                            params: [
+                                                {
+                                                    chainId: '0xaa36a7', // Hexadecimal for 11155111
+                                                    chainName: 'Sepolia Testnet',
+                                                    nativeCurrency: {
+                                                        name: 'SepoliaETH',
+                                                        symbol: 'SepoliaETH',
+                                                        decimals: 18
+                                                    },
+                                                    rpcUrls: ['sepolia.infura.io', 'https://ethereum-sepolia-rpc.publicnode.com'] /* */,
+                                                    blockExplorerUrls: ['https://sepolia.etherscan.io/'] /* */,
+                                                },
+                                            ],
+                                        });
+                                        console.log("Sepolia network added and connected!");
+                                    } catch (addError) {
+                                        console.error("Failed to add the Sepolia network:", addError);
+                                    }
+                                } else {
+                                    console.error("Failed to switch to Sepolia network:", switchError);
+                                }
+                            }
+                        } else {
+                            console.error("MetaMask is not installed. Please install it to use this feature.");
+                        }
+                    }
+
+        let currentAccount = null;
+
+        // 1. Check if MetaMask is installed
+        function isMetaMaskInstalled() {
+            return typeof window.ethereum !== 'undefined';
+        }
+
+        // 2. Connect Wallet
+        async function connectWallet() {
+            const msgArea = document.getElementById('msgArea');
+            
+            // Check for file:// protocol restriction (Common user error)
+            if (window.location.protocol === 'file:') {
+                 showMsg('<b>Connection Error:</b> MetaMask does not work on local files (file://).<br><br>Please serve this file via a local server (http://localhost) or VS Code Live Server.', 'error');
+                 return;
+            }
+
+            if (!isMetaMaskInstalled()) {
+                showMsg('MetaMask is not installed or detected. If you are viewing this in a preview/sandbox, it may be blocked.', 'error');
+                return;
+            }
+
+            try {
+                // Request account access
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                handleAccountsChanged(accounts);
+                connectToSepolia();
+            } catch (error) {
+                console.error(error);
+                showMsg('Connection rejected by user.', 'error');
+            }
+        }
+
+        // 3. Handle Account Changes
+        function handleAccountsChanged(accounts) {
+            if (accounts.length === 0) {
+                showMsg('Please connect to MetaMask.', 'error');
+                resetUI();
+            } else {
+                currentAccount = accounts[0];
+                updateUIConnected();
+            }
+        }
+
+        // 4. Update UI to Connected State
+        function updateUIConnected() {
+            document.getElementById('connectSection').classList.add('hidden');
+            document.getElementById('transactionSection').classList.remove('hidden');
+            
+            document.getElementById('statusDot').classList.remove('bg-red-500');
+            document.getElementById('statusDot').classList.add('bg-green-500');
+            document.getElementById('statusText').innerText = 'Connected';
+            document.getElementById('userAddress').innerText = `${currentAccount.substring(0,6)}...${currentAccount.substring(38)}`;
+            
+            hideMsg();
+        }
+
+        function resetUI() {
+            currentAccount = null;
+            document.getElementById('connectSection').classList.remove('hidden');
+            document.getElementById('transactionSection').classList.add('hidden');
+            document.getElementById('statusDot').classList.add('bg-red-500');
+            document.getElementById('statusDot').classList.remove('bg-green-500');
+            document.getElementById('statusText').innerText = 'Disconnected';
+        }
+
+        // 5. Send Transaction
+        async function sendTransaction() {
+            const recipient = document.getElementById('recipientAddr').value;
+            const amount = document.getElementById('ethAmount').value;
+            const sendBtn = document.getElementById('sendBtn');
+
+            // Basic Validation
+            if (!currentAccount) return showMsg('Wallet not connected', 'error');
+            if (!recipient || !recipient.startsWith('0x') || recipient.length !== 42) {
+                return showMsg('Invalid recipient address', 'error');
+            }
+            if (!amount || amount <= 0) {
+                return showMsg('Please enter a valid amount', 'error');
+            }
+
+            try {
+                sendBtn.disabled = true;
+                sendBtn.innerText = 'Processing...';
+                sendBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+                // Convert ETH to Wei (Hex) safely without external libraries
+                // 1 ETH = 10^18 Wei. We use BigInt to avoid float precision issues.
+                const amountWei = parseEthToWei(amount);
+
+                const params = [{
+                    from: currentAccount,
+                    to: recipient,
+                    value: amountWei, // Hex value
+                    // gas: optional, MetaMask estimates it automatically
+                    // gasPrice: optional, MetaMask estimates it automatically
+                }];
+
+                // Trigger MetaMask
+                const transactionHash = await window.ethereum.request({
+                    method: 'eth_sendTransaction',
+                    params: params,
+                });
+
+                showMsg(`Transaction Sent! Hash: ${transactionHash.substring(0, 20)}...`, 'success');
+                console.log('Tx Hash:', transactionHash);
+
+            } catch (error) {
+                console.error(error);
+                if (error.code === 4001) {
+                    showMsg('Transaction rejected by user.', 'error');
+                } else {
+                    showMsg('Transaction failed. Check console for details.', 'error');
+                }
+            } finally {
+                sendBtn.disabled = false;
+                sendBtn.innerText = 'Send Transaction';
+                sendBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        }
+
+        // Utility: Convert Decimal ETH string to Hex Wei string
+        // Note: For production, use libraries like ethers.js or web3.js
+        function parseEthToWei(ethAmount) {
+            const decimals = 18;
+            // Split "1.5" into "1" and "5"
+            let [integer, fraction = ""] = ethAmount.toString().split(".");
+            
+            // Pad fraction to 18 places: "5" -> "500000000000000000"
+            fraction = fraction.padEnd(decimals, "0");
+            
+            // Recombine and remove leading zeros
+            const weiString = (integer + fraction).replace(/^0+/, "");
+            
+            // Convert to BigInt and then to Hex
+            const weiBigInt = BigInt(weiString || "0");
+            return "0x" + weiBigInt.toString(16);
+        }
+
+        // Utility: Message Display
+        function showMsg(text, type) {
+            const el = document.getElementById('msgArea');
+            el.classList.remove('hidden', 'bg-red-900/50', 'bg-green-900/50', 'border-red-500', 'border-green-500', 'text-red-200', 'text-green-200');
+            
+            if (type === 'error') {
+                el.classList.add('bg-red-900/50', 'border-red-500', 'text-red-200');
+            } else {
+                el.classList.add('bg-green-900/50', 'border-green-500', 'text-green-200');
+            }
+            
+            el.innerHTML = text;
+            el.classList.remove('hidden');
+        }
+
+        function hideMsg() {
+            document.getElementById('msgArea').classList.add('hidden');
+        }
+
+        // Listen for chain/account changes in MetaMask
+        if (window.ethereum) {
+            window.ethereum.on('accountsChanged', handleAccountsChanged);
+            window.ethereum.on('chainChanged', () => window.location.reload());
+        }
+
+    </script>
+
+<label for="scamtype"> Scam Type: </label>
+	<select name="scamtype" id="scamtype">
+		<option value="1">Phishing</option>
+		<option value="2">Fraud</option>
+		<option value="3">Virus</option>
+	</select>
+
+<label for="scammethod"> Scam Method: </label>
+	<select name="scammethod" id="scammethod">
+		<option value="1">Email</option>
+		<option value="2">Text</option>
+		<option value="3">Phone Call</option>
+	</select>
+	
+<label for="scamsender"> Scam Sender: </label>
+	<input type="text" id="scamsender" name="scamsender">
+	
+<button id="submitbutton" >Submit</button>
+<button id="disputebutton" >Dispute</button>
+<button id="statsbutton" onclick="showMsg( getstats(), 'success' )">Get Stats</button>
+
+<div id="results"></div>
+
+
+</body>
+</html>

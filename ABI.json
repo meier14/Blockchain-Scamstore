@@ -1,0 +1,111 @@
+[
+	{
+		"inputs": [
+			{
+				"internalType": "uint16",
+				"name": "Scamtype",
+				"type": "uint16"
+			},
+			{
+				"internalType": "uint16",
+				"name": "ScamMethod",
+				"type": "uint16"
+			},
+			{
+				"internalType": "string",
+				"name": "Sender",
+				"type": "string"
+			}
+		],
+		"name": "DisputeScam",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint16",
+				"name": "Scamtype",
+				"type": "uint16"
+			},
+			{
+				"internalType": "uint16",
+				"name": "ScamMethod",
+				"type": "uint16"
+			},
+			{
+				"internalType": "string",
+				"name": "Sender",
+				"type": "string"
+			}
+		],
+		"name": "ReportScam",
+		"outputs": [],
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint16",
+				"name": "Scamtype",
+				"type": "uint16"
+			},
+			{
+				"internalType": "uint16",
+				"name": "ScamMethod",
+				"type": "uint16"
+			},
+			{
+				"internalType": "string",
+				"name": "Sender",
+				"type": "string"
+			}
+		],
+		"name": "CheckScam",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "present",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint16",
+				"name": "Scamtype",
+				"type": "uint16"
+			},
+			{
+				"internalType": "uint16",
+				"name": "ScamMethod",
+				"type": "uint16"
+			},
+			{
+				"internalType": "string",
+				"name": "Sender",
+				"type": "string"
+			}
+		],
+		"name": "GetStats",
+		"outputs": [
+			{
+				"internalType": "uint32",
+				"name": "",
+				"type": "uint32"
+			},
+			{
+				"internalType": "uint32",
+				"name": "",
+				"type": "uint32"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
+]
